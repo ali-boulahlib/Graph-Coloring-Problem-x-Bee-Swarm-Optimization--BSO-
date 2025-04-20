@@ -17,10 +17,10 @@ PARAM_GRID = {
     'n_bees': [10, 20, 50],
     'n_neighbors': [5, 10, 20],
     'n_chance': [1, 3, 5],
-    'max_iter': [100, 200, 500],
+    'max_iter': [10,20,50,100],
 }
 # seeds per setting for averaging
-SEEDS = [1, 2, 3, 4, 5]
+SEEDS = [42]
 
 # metrics to record: graph, seed, parameters, fitness, conflicts, colors, runtime
 
