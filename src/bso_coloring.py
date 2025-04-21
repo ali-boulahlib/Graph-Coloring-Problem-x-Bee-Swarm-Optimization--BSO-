@@ -28,7 +28,7 @@ class BSOColoring:
         self.max_iter = max_iter
         self.max_steps = max_steps
         self.flip = flip
-        self.alpha = alpha or (G.number_of_edges() + 1)
+        self.alpha = alpha or (G.number_of_edges() + 1) # TO change
         
         # Initialize taboo list to store previously visited reference solutions
         self.taboo_list = []
