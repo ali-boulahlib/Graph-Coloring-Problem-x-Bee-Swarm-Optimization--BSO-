@@ -29,20 +29,8 @@ PARAM_GRID = {
 # seeds per setting for averaging
 SEEDS = [42]
 
-# metrics to record: graph, seed, parameters, fitness, conflicts, colors, runtime
 
 
-
-
-def decode_fitness(fitness: int, alpha: int) -> Tuple[int, int]:
-    """
-    Decode the fitness value into conflicts and colors used.
-    In the provided implementation:
-    fitness = alpha * conflicts + distinct_colors
-    """
-    conflicts = fitness // alpha
-    colors = fitness % alpha
-    return conflicts, colors
 
 
 def run_experiments(output_path: str):
@@ -73,7 +61,7 @@ def run_experiments(output_path: str):
                                     
                                     solver = BSOColoring(
                                         G,
-                                        k_max=G.number_of_nodes(),  # use max number of nodes as color limit
+                                        k_max=None,
                                         n_bees=n_bees,
                                         max_steps=max_steps,  # using max_steps instead of n_neighbors
                                         n_chance=n_chance,
@@ -87,7 +75,9 @@ def run_experiments(output_path: str):
                                     runtime = time.time() - start
                                     
                                     # decode fitness
-                                    conflicts, colors = decode_fitness(fitness, solver.alpha)
+                                    colors = fitness[1]
+                                    conflicts = fitness[2]
+                                    fitness = fitness[0]
 
                                     writer.writerow([
                                         graph_name, seed, n_bees, max_steps, n_chance, max_iter, flip,
