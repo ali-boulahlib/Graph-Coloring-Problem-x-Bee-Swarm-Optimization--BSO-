@@ -83,26 +83,50 @@ class BSOColoring:
                     diversest = max(table, key=lambda T: sum(self.hamming(T, U) for U in table))
                     table[pos] = diversest.copy()
 
-    def local_search(self, solution: np.ndarray) -> np.ndarray:
-        best = solution.copy()
-        best_fit = self.fitness(solution)[0]
-        S = solution.copy()
+    def local_search(self, solution: List[int]) -> List[int]:
+        # Perform local search from the given solution
+        best_solution = solution.copy()
+        best_fitness = self.fitness(solution)
+        
         for _ in range(self.max_steps):
-            node = random.randrange(self.n)
-            old_color = int(S[node])
-            choices = list(range(1, self.k_max + 1))
-            choices.remove(old_color)
-            new_color = random.choice(choices)
-            # apply flip
-            S[node] = new_color
-            f_new = self.fitness(S)[0]
-            if f_new < best_fit:
-                best = S.copy()
-                best_fit = f_new
-            else:
-                # revert
-                S[node] = old_color
-        return best
+            # Find conflicting edges in the current solution
+            conflicting_edges = [(u, v) for u, v in self.G.edges() if solution[u-1] == solution[v-1]]
+            if not conflicting_edges:
+                break  # No conflicts, exit early
+            
+            # Collect all nodes involved in conflicts (graph nodes, 1-based)
+            conflicting_nodes = set()
+            for u, v in conflicting_edges:
+                conflicting_nodes.add(u)
+                conflicting_nodes.add(v)
+            conflicting_nodes = list(conflicting_nodes)
+            
+            # Randomly select a conflicting node
+            node = random.choice(conflicting_nodes)
+            
+            # Determine current color (convert to 0-based index)
+            current_color = solution[node - 1]
+            
+            # Generate possible new colors different from current
+            available_colors = [c for c in range(1, self.k_max + 1) if c != current_color]
+            if not available_colors:
+                continue  # Skip if no colors available (unlikely case)
+            new_color = random.choice(available_colors)
+            
+            # Create new solution by changing the node's color
+            new_solution = solution.copy()
+            new_solution[node - 1] = new_color
+            
+            # Calculate new fitness
+            new_fitness = self.fitness(new_solution)
+            
+            # Update best solution if improved
+            if new_fitness < best_fitness:
+                best_solution = new_solution.copy()
+                best_fitness = new_fitness
+                solution = new_solution.copy()
+        
+        return best_solution
 
     def select_new_reference(
         self,
