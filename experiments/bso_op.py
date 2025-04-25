@@ -4,6 +4,8 @@ import networkx as nx
 from typing import List, Tuple
 from collections import Counter
 
+from utils import calculate_upper_bound, calculate_lower_bound
+
 class BSOColoring:
     def __init__(
         self,
@@ -25,7 +27,7 @@ class BSOColoring:
         self.edges = list(G.edges())
         self.adj = {u: list(G.neighbors(u)) for u in G.nodes()}
         self.n = G.number_of_nodes()
-        self.k_max = k_max
+        self.k_max = calculate_upper_bound(G) if k_max is None else k_max
         self.n_bees = n_bees
         self.n_chance = n_chance
         self.max_iter = max_iter
@@ -45,7 +47,7 @@ class BSOColoring:
         # Compute conflicts over cached edges
         conflicts = sum(1 for u, v in self.edges if S[u-1] == S[v-1])
         distinct = len(np.unique(S))
-        return self.alpha * conflicts + distinct
+        return self.alpha * conflicts + distinct , distinct, conflicts
 
     def determine_search_area(self) -> List[np.ndarray]:
         search_area: List[np.ndarray] = []
@@ -83,7 +85,7 @@ class BSOColoring:
 
     def local_search(self, solution: np.ndarray) -> np.ndarray:
         best = solution.copy()
-        best_fit = self.fitness(solution)
+        best_fit = self.fitness(solution)[0]
         S = solution.copy()
         for _ in range(self.max_steps):
             node = random.randrange(self.n)
@@ -93,7 +95,7 @@ class BSOColoring:
             new_color = random.choice(choices)
             # apply flip
             S[node] = new_color
-            f_new = self.fitness(S)
+            f_new = self.fitness(S)[0]
             if f_new < best_fit:
                 best = S.copy()
                 best_fit = f_new
@@ -107,9 +109,9 @@ class BSOColoring:
         dance_table: List[np.ndarray],
         chances: int
     ) -> Tuple[np.ndarray, int]:
-        best_quality = min(dance_table, key=lambda s: self.fitness(s))
-        best_q_fit = self.fitness(best_quality)
-        current_fit = self.fitness(self.S_ref)
+        best_quality = min(dance_table, key=lambda s: self.fitness(s)[0])
+        best_q_fit = self.fitness(best_quality)[0]
+        current_fit = self.fitness(self.S_ref)[0]
         if best_q_fit < current_fit:
             return best_quality, self.n_chance
         else:
@@ -135,6 +137,6 @@ class BSOColoring:
             self.inject_diversity(dance_table)
             self.S_ref, chances = self.select_new_reference(dance_table, chances)
 
-            if self.fitness(self.S_ref) < self.alpha:
+            if self.fitness(self.S_ref)[0] < self.alpha:
                 break
         return self.S_ref, self.fitness(self.S_ref)

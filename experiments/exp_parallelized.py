@@ -46,17 +46,13 @@ def load_graph(path: str) -> nx.Graph:
                 G.add_edge(u, v)
     return G
 
-def decode_fitness(fit: int, alpha: int) -> Tuple[int,int]:
-    return fit // alpha, fit % alpha
-
-
 def single_run(graph_path: str, params: Dict) -> Tuple:
     graph_name = os.path.basename(graph_path)
     G = load_graph(graph_path)
 
     solver = BSOColoring(
         G,
-        k_max=G.number_of_nodes(),
+        k_max=None,
         n_bees=params['n_bees'],
         max_steps=params['max_steps'],
         n_chance=params['n_chance'],
@@ -67,7 +63,11 @@ def single_run(graph_path: str, params: Dict) -> Tuple:
     start = time.time()
     S, fit = solver.run()
     runtime = time.time() - start
-    conflicts, colors = decode_fitness(fit, solver.alpha)
+    colors = fit[1]
+    conflicts = fit[2]
+    fit = fit[0]
+
+
 
     return (
         graph_name,
@@ -80,7 +80,8 @@ def single_run(graph_path: str, params: Dict) -> Tuple:
         fit,
         conflicts,
         colors,
-        f"{runtime:.4f}"
+        f"{runtime:.4f}",
+        S # solution
     )
 
 
@@ -93,7 +94,7 @@ def run_experiments(output_path: str):
         writer = csv.writer(csvfile)
         writer.writerow([
             'graph','seed','n_bees','max_steps','n_chance','max_iter','flip',
-            'fitness','conflicts','colors','runtime'
+            'fitness','conflicts','colors','runtime','solution'
         ])
 
         # For each graph
