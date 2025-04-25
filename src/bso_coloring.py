@@ -2,18 +2,22 @@ import random
 import networkx as nx
 from typing import List, Tuple
 from collections import Counter
+import math
+
+from utils import calculate_upper_bound, calculate_lower_bound
 
 class BSOColoring:
+
     def __init__(
         self,
         G: nx.Graph,                 
-        k_max: int,                  # maximum number of colors to use
-        n_bees: int = 30,            # size of the swarm
+        k_max: int ,                  # maximum number of colors to use
+        n_bees: int = 10,            # size of the swarm
         n_chance: int = 3,           # duplicate threshold before injecting diversity
-        max_iter: int = 500,         # maximum iterations
+        max_iter: int = 100,         # maximum iterations
         max_steps: int = 15,         # maximum steps for local search
         flip: int = 5,               # flip parameter for search area determination
-        alpha: int = None,           # conflict penalty (defaults to |E|+1)
+        alpha: int = 1,         # conflict penalty (defaults to |E|+1)
         seed: int = None,            # random seed
     ):
         
@@ -22,7 +26,7 @@ class BSOColoring:
 
         self.G = G
         self.n = G.number_of_nodes()
-        self.k_max = k_max
+        self.k_max = calculate_upper_bound(G) if k_max is None else k_max
         self.n_bees = n_bees
         self.n_chance = n_chance
         self.max_iter = max_iter
@@ -36,21 +40,22 @@ class BSOColoring:
         # Initialize reference solution
         self.S_ref = self.random_coloring()
 
+
     def random_coloring(self) -> List[int]:
-        # Generate a random coloring (1..k_max) for n nodes
+        
         return [random.randint(1, self.k_max) for _ in range(self.n)]
 
     def fitness(self, S: List[int]) -> int:
-        # Calculate the fitness of a coloring
+        
         # fitness = alpha * conflicts + distinct_colors
         
         conflicts = sum(1 for u, v in self.G.edges() if S[u-1] == S[v-1])
         distinct = len(set(S))
-        return self.alpha * conflicts + distinct
+        return self.alpha * conflicts + distinct , distinct , conflicts
     
     def determine_search_area(self) -> List[List[int]]:
-        # Implementation of the search area determination
-        # Based on the pseudocode provided
+        # Find the neighboring bees lel S_ref
+
         search_area = []
         h = 0
         
@@ -71,8 +76,7 @@ class BSOColoring:
         return search_area
 
     def hamming(self, A: List[int], B: List[int]) -> int:
-        # Calculate the Hamming distance between two colorings
-        # Hamming distance = number of positions with different colors
+        # Hamming distance = number of positions with different colors between the two
         return sum(1 for x, y in zip(A, B) if x != y)
     
     def diversity(self, solution: List[int]) -> int:
@@ -151,7 +155,8 @@ class BSOColoring:
                 return best_diversity, self.n_chance
 
     def run(self) -> Tuple[List[int], int]:
-        # Main BSO loop. Returns the best coloring found and its fitness.
+        # Main BSO loop. 
+        # Returns the best coloring found and its fitness.
         chances = self.n_chance
         
         for _ in range(self.max_iter):
@@ -183,7 +188,7 @@ class BSOColoring:
             self.S_ref, chances = self.select_new_reference(dance_table, chances)
             
             # Early stop if valid (no conflicts)
-            if self.fitness(self.S_ref) < self.alpha:  # zero conflicts => fitness < alpha
-                break
+            #if self.fitness(self.S_ref)[2] == 0 and self.fitness(self.S_ref)[1] <= self.alpha:
+            #    break
         
         return self.S_ref, self.fitness(self.S_ref)
