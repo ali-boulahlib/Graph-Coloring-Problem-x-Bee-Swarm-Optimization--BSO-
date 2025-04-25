@@ -107,28 +107,48 @@ class BSOColoring:
                         key=lambda T: sum(self.hamming(T, U) for U in table)
                     )
                     table[pos] = divers.copy()
-    
+
+                    
     def local_search(self, solution: List[int]) -> List[int]:
         # Perform local search from the given solution
         best_solution = solution.copy()
         best_fitness = self.fitness(solution)
         
         for _ in range(self.max_steps):
-            # Choose a random node and change its color
-            node = random.randrange(self.n)
-            current_color = solution[node]
-            new_color = random.choice([c for c in range(1, self.k_max+1) if c != current_color])
+            # Find conflicting edges in the current solution
+            conflicting_edges = [(u, v) for u, v in self.G.edges() if solution[u-1] == solution[v-1]]
+            if not conflicting_edges:
+                break  # No conflicts, exit early
             
-            # Create new solution by changing one color
+            # Collect all nodes involved in conflicts (graph nodes, 1-based)
+            conflicting_nodes = set()
+            for u, v in conflicting_edges:
+                conflicting_nodes.add(u)
+                conflicting_nodes.add(v)
+            conflicting_nodes = list(conflicting_nodes)
+            
+            # Randomly select a conflicting node
+            node = random.choice(conflicting_nodes)
+            
+            # Determine current color (convert to 0-based index)
+            current_color = solution[node - 1]
+            
+            # Generate possible new colors different from current
+            available_colors = [c for c in range(1, self.k_max + 1) if c != current_color]
+            if not available_colors:
+                continue  # Skip if no colors available (unlikely case)
+            new_color = random.choice(available_colors)
+            
+            # Create new solution by changing the node's color
             new_solution = solution.copy()
-            new_solution[node] = new_color
+            new_solution[node - 1] = new_color
             
             # Calculate new fitness
             new_fitness = self.fitness(new_solution)
             
-            # If better, update best solution
+            # Update best solution if improved
             if new_fitness < best_fitness:
-                best_solution = new_solution
+                best_solution = new_solution.copy()
                 best_fitness = new_fitness
                 solution = new_solution.copy()
         
