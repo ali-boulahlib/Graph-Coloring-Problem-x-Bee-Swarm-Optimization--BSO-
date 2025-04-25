@@ -135,7 +135,7 @@ def run_experiments(output_path: str):
                         try:
                             res = fut.result(timeout=TIMEOUT)
                             print(f"✅ Completed: {graph_path}, {p}")
-                            print(f"  Result: {res}")
+                            print(f"  Result: colors={res[9]}, conflicts={res[8]}, fitness={res[7]} , runtime={res[10]}\n")
                             results.append(res)
                             writer.writerow(res)
                         except TimeoutError:
