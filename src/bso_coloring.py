@@ -108,7 +108,7 @@ class BSOColoring:
                     )
                     table[pos] = divers.copy()
 
-                    
+
     def local_search(self, solution: List[int]) -> List[int]:
         # Perform local search from the given solution
         best_solution = solution.copy()
@@ -175,6 +175,8 @@ class BSOColoring:
                 return best_diversity, self.n_chance
 
     def run(self) -> Tuple[List[int], int]:
+
+
         # Main BSO loop. 
         # Returns the best coloring found and its fitness.
         chances = self.n_chance
@@ -207,8 +209,8 @@ class BSOColoring:
             # Select new reference solution
             self.S_ref, chances = self.select_new_reference(dance_table, chances)
             
-            # Early stop if valid (no conflicts)
-            #if self.fitness(self.S_ref)[2] == 0 and self.fitness(self.S_ref)[1] <= self.alpha:
-            #    break
+            # Early stop if valid (no conflicts and )
+            if self.fitness(self.S_ref)[2] == 0 and self.fitness(self.S_ref)[1] == self.k_max:
+                break
         
         return self.S_ref, self.fitness(self.S_ref)
