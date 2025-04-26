@@ -17,7 +17,7 @@ class BSOColoring:
         max_iter: int = 100,         # maximum iterations
         max_steps: int = 15,         # maximum steps for local search
         flip: int = 5,               # flip parameter for search area determination
-        alpha: int = 1,         # conflict penalty (defaults to |E|+1)
+        alpha: int = 1,         # conflict penalty 
         seed: int = None,            # random seed
     ):
         
@@ -26,7 +26,7 @@ class BSOColoring:
 
         self.G = G
         self.n = G.number_of_nodes()
-        self.k_max = calculate_upper_bound(G) if k_max is None else k_max
+        self.k_max = len(G.nodes()) if k_max is None else k_max
         self.n_bees = n_bees
         self.n_chance = n_chance
         self.max_iter = max_iter
@@ -209,8 +209,8 @@ class BSOColoring:
             # Select new reference solution
             self.S_ref, chances = self.select_new_reference(dance_table, chances)
             
-            # Early stop if valid (no conflicts and )
-            if self.fitness(self.S_ref)[2] == 0 and self.fitness(self.S_ref)[1] == self.k_max:
-                break
+            # Early stop if valid (no conflicts )
+            #if self.fitness(self.S_ref)[2] == 0:
+                #break
         
         return self.S_ref, self.fitness(self.S_ref)
