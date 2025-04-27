@@ -14,7 +14,7 @@ from bso_op import BSOColoring
 
 # --- Configuration ---
 GRAPHS_DIR = 'data/benchmarks'
-OUTPUT_CSV = 'results/bso_experiments.csv'
+OUTPUT_CSV = 'results/test.csv'
 
 # Parameter grid (excluding max_iter)
 BASE_PARAM_GRID = {
