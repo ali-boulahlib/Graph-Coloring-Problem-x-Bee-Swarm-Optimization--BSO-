@@ -11,7 +11,7 @@ from typing import List, Tuple
 # Import the provided BSOColoring class
 # Assuming the BSOColoring implementation is in the same file
 from bso_coloring import BSOColoring
-from dfs_coloring import load_graph
+from dfs_coloring_op import load_graph
 
 
 # --- Configuration ---
