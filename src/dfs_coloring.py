@@ -13,15 +13,19 @@ class DFSColoring:
         self.order = sorted(G.nodes(), key=lambda v: G.degree(v), reverse=True) # Order nodes by degree (highest first)
         self.k_max = k_max or self.n
         
-        self.coloring: Dict[int, int] = {v: 0 for v in G.nodes()}                              # Initialize coloring (0 = uncolored)
+        self.coloring: Dict[int, int] = {v: 0 for v in G.nodes()}
+                                     # Initialize coloring (0 = uncolored)
 
     def valid(self, v: int, c: int) -> bool:
         # Check if color c can be assigned to node v without conflicts
         return all(self.coloring[u] != c for u in self.G.neighbors(v))
 
     def dfs(self, idx: int, k: int) -> bool:
+        
         ## Recursive DFS to try coloring order[idx:] with k colors.
         if idx == len(self.order):
+            print(f"Found solution with {k} colors: {self.coloring}")
+            
             return True
         v = self.order[idx]
         for color in range(1, k+1):
